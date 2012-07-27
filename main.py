@@ -13,7 +13,7 @@ def test_data():
     a = numpy.zeros(im.size, dtype=numpy.bool)
     for i in range(20):
     #for i in range(im.size[0]):
-        for j in range(30):
+        for j in range(20):
         #for j in range(im.size[1]):
             a[i,j] = im.getpixel((i,j))
     padded = numpy.zeros((a.shape[0]+2, a.shape[1]+2), dtype=numpy.bool)
@@ -257,7 +257,7 @@ def get_path_options(paths):
         path_length = len(path)
         straight_line_options = [i+2 for i in range(path_length)]
         for i in range(path_length):
-            print 'now checking lines starting from index', i, 'in path', path
+            #print 'now checking lines starting from index', i, 'in path', path
             dir_set = set()
             dir_set.add(find_direction((i+1) % path_length, path))
             dir_set.add(find_direction((i+2) % path_length, path))
@@ -298,6 +298,30 @@ def display_paths(paths):
     zoom_out()
     pyplot.show()
 
+def get_shortest_path_options(path_options):
+    print path_options
+    shortest_lengths = []
+    for options in path_options:
+        graph = {}
+        for i, max_end in enumerate(options):
+            if max_end > i:
+                graph[i] = range(i+1, max_end+1)
+            if max_end < i:
+                graph[i] = range(i+1, len(options))
+                graph[i].extend(range(max_end+1))
+
+        shortpaths = {}
+        for start in graph:
+            shortpath = [start]
+            #print shortpath[-1], graph[shortpath[-1]]
+            while start not in graph[shortpath[-1]]:
+                shortpath.append(graph[shortpath[-1]][-1])
+            #print 'shortest path from ', start, 'is',shortpath, len(shortpath)
+            shortpaths[start] = len(shortpath)
+        shortest_lengths.append(min(shortpaths.values()))
+        #print shortpaths
+    return shortest_lengths
+
 def display_path_options(paths, path_options):
     from matplotlib import pyplot
 
@@ -337,10 +361,10 @@ def padded(array):
     return new_array
 
 def demo():
-    #im = simple_test_data()
+    im = simple_test_data()
     #im = super_simple_test_data()
-    im = problem_test_data()
-    im = test_data()
+    #im = problem_test_data()
+    #im = test_data()
     array = padded(im)
     paths = get_paths(im)
     #print paths
@@ -349,7 +373,10 @@ def demo():
     #print numpy.array(array, dtype=numpy.int)
     #display_paths(bigpaths)
     path_options = get_path_options(bigpaths)
-    display_path_options(bigpaths, path_options)
+    shortest_path_options = get_shortest_path_options(path_options)
+    print shortest_path_options
+
+    #display_path_options(bigpaths, path_options)
 
 def doctests():
     import doctest
