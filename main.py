@@ -11,8 +11,10 @@ WHITE = False
 def test_data():
     im = Image.open('data1.bmp')
     a = numpy.zeros(im.size, dtype=numpy.bool)
-    for i in range(im.size[0]):
-        for j in range(im.size[1]):
+    for i in range(20):
+    #for i in range(im.size[0]):
+        for j in range(30):
+        #for j in range(im.size[1]):
             a[i,j] = im.getpixel((i,j))
     padded = numpy.zeros((a.shape[0]+2, a.shape[1]+2), dtype=numpy.bool)
     padded[1:-1, 1:-1] = a
@@ -30,10 +32,15 @@ def simple_test_data():
                      [0,0,0,0,0,0]], dtype=numpy.bool)
     return a
 
+def super_simple_test_data():
+    a = numpy.array([[0,0,0],
+                     [0,1,0],
+                     [0,0,0]], dtype=numpy.bool)
+    return a
 def problem_test_data():
     a = numpy.array([[0,0,0,0,0],
                      [0,1,1,1,0],
-                     [0,1,0,1,0],
+                     [0,1,1,1,0],
                      [0,0,1,1,0],
                      [0,0,0,0,0]], dtype=numpy.bool)
     return a
@@ -169,12 +176,12 @@ def get_paths(array):
         whites = numpy.where(array==False)
         #print blacks
         if not blacks[0].any():
-            print "Image is completely white"
+            #print "Image is completely white"
             break
         first_black = (blacks[0][0], blacks[1][0])
         #print numpy.array(array, dtype=numpy.int)
         first_white = first_neighbor(first_black, False, array)
-        print 'working the path that starts and ends at processing', (first_black, first_white)
+        #print 'working the path that starts and ends at processing', (first_black, first_white)
         if first_black in start_positions:
             raw_input(str(counter))
             counter += 1
@@ -184,9 +191,9 @@ def get_paths(array):
         positions = set()
         while True:
             new_pos = get_action(cur_pos[0], cur_pos[1], array)
-            print new_pos
+            #print new_pos
             vertex = get_vertex(*new_pos)
-            print 'vertex:', vertex
+            #print 'vertex:', vertex
             #print path
             s = scale = 3
             temp = numpy.array(array, dtype=numpy.int)
@@ -194,11 +201,12 @@ def get_paths(array):
             temp = numpy.array(temp[max(0, vertex[0]-s):min(temp.shape[0], vertex[0]+s),
                      max(0, vertex[1]-s):min(temp.shape[1], vertex[1]+s)],
                      dtype=numpy.int)
-            print temp
+            #print temp
             if vertex in path:
-                print 'repeating vertex!', vertex
+                pass
+                #print 'repeating vertex!', vertex
             if new_pos in positions:
-                print 'repeat position!'
+                #print 'repeat position!'
                 break
             positions.add(cur_pos)
             path.append(vertex)
@@ -215,12 +223,13 @@ def get_paths(array):
         #print numpy.array(array, dtype=numpy.int)
     #todo: descpeckling here, filter by path area
     for path in paths:
-        print path, path_areas[tuple(path)]
+        pass
+        #print path, path_areas[tuple(path)]
     return paths
 
 def straight(start_index, index_to_try, path):
-    """Returns True if """
-    print start_index, index_to_try, path
+    """Returns True if line is straight"""
+    #print start_index, index_to_try, path
     if start_index < index_to_try:
         comb_pool = path[start_index:index_to_try+1]
     elif index_to_try < start_index:
@@ -238,30 +247,35 @@ def find_direction(index_to_try, path):
     v1 = path[index_to_try]
     v2 = path[index_to_try-1]
     diff = (v2[0] - v1[0], v2[1] - v1[1])
-    print 'find direction result', v1, v2, diff
     return diff
 
 def get_path_options(paths):
-    print paths
-
+    #print 'paths:',paths
     all_path_straight_line_options = []
     for path in paths:
+        #print 'now checking path', path
         path_length = len(path)
         straight_line_options = [i+2 for i in range(path_length)]
         for i in range(path_length):
+            print 'now checking lines starting from index', i, 'in path', path
             dir_set = set()
             dir_set.add(find_direction((i+1) % path_length, path))
             dir_set.add(find_direction((i+2) % path_length, path))
             while True:
                 index_to_try = (straight_line_options[i] + 1) % path_length
                 dir_set.add(find_direction(index_to_try, path))
+                #print 'trying', i, 'to', index_to_try
                 if len(dir_set) == 4:
+                    #print 'all directions; fail'
                     break
                 elif straight(i, index_to_try, path):
                     straight_line_options[i] = index_to_try
+                    #print 'line is straight, keep index'
                 else:
+                    #print 'not straight; fail'
                     break
         all_path_straight_line_options.append(straight_line_options)
+    #print 'all path straight line options', all_path_straight_line_options
     return all_path_straight_line_options
 
 def display_array(array):
@@ -296,15 +310,25 @@ def display_path_options(paths, path_options):
         pyplot.ylim(ymin-(ysize/8), ymax+(ysize/8))
 
     for path, path_options in zip(paths, path_options):
-        lines = []
-        print path
+        #print path
         for start_index, start_vertex in enumerate(path):
-            for end_index in range(start_index+1, path_options[start_index]+1):
-                print start_index, end_index
+            max_end = path_options[start_index]
+            if start_index < max_end:
+                line_ends = range(start_index+1, max_end+1)
+            elif start_index > max_end:
+                line_ends = range(start_index+1, len(path_options)) + range(max_end+1)
+            else:
+                assert False
+            for end_index in line_ends:
+                #print start_index, end_index
 
-                print 'line:', (path[start_index][0], path[end_index][0]), (path[start_index][1], path[end_index][1])
-                line = pyplot.plot((path[start_index][0], path[end_index][0]), (path[start_index][1], path[end_index][1]))
-                print line
+                #print 'line:', (path[start_index][0], path[end_index][0]), (path[start_index][1], path[end_index][1])
+                line = pyplot.plot(
+                        (path[start_index][0], path[end_index][0]),
+                        (path[start_index][1], path[end_index][1]))
+                #print line
+    #for path in paths:
+    #    pyplot.plot(*zip(*(path+[path[0]])), linewidth=6)
     zoom_out()
     pyplot.show()
 def padded(array):
@@ -313,15 +337,16 @@ def padded(array):
     return new_array
 
 def demo():
-    im = simple_test_data()
-    #im = problem_test_data()
-    #im = test_data()
+    #im = simple_test_data()
+    #im = super_simple_test_data()
+    im = problem_test_data()
+    im = test_data()
     array = padded(im)
     paths = get_paths(im)
-    print paths
+    #print paths
     thresh = 0
     bigpaths = [path for path in paths if get_interior_area(path) > thresh]
-    print numpy.array(array, dtype=numpy.int)
+    #print numpy.array(array, dtype=numpy.int)
     #display_paths(bigpaths)
     path_options = get_path_options(bigpaths)
     display_path_options(bigpaths, path_options)
