@@ -241,7 +241,7 @@ def find_direction(index_to_try, path):
     print 'find direction result', v1, v2, diff
     return diff
 
-def get_polygons(paths):
+def get_path_options(paths):
     print paths
 
     all_path_straight_line_options = []
@@ -284,6 +284,29 @@ def display_paths(paths):
     zoom_out()
     pyplot.show()
 
+def display_path_options(paths, path_options):
+    from matplotlib import pyplot
+
+    def zoom_out():
+        xmin, xmax = pyplot.xlim()
+        ymin, ymax = pyplot.ylim()
+        xsize = xmax - xmin
+        ysize = ymax - ymin
+        pyplot.xlim(xmin-(xsize/8), xmax+(xsize/8))
+        pyplot.ylim(ymin-(ysize/8), ymax+(ysize/8))
+
+    for path, path_options in zip(paths, path_options):
+        lines = []
+        print path
+        for start_index, start_vertex in enumerate(path):
+            for end_index in range(start_index+1, path_options[start_index]+1):
+                print start_index, end_index
+
+                print 'line:', (path[start_index][0], path[end_index][0]), (path[start_index][1], path[end_index][1])
+                line = pyplot.plot((path[start_index][0], path[end_index][0]), (path[start_index][1], path[end_index][1]))
+                print line
+    zoom_out()
+    pyplot.show()
 def padded(array):
     new_array = numpy.zeros((array.shape[0]+2, array.shape[1]+2), dtype=numpy.bool)
     new_array[1:-1, 1:-1] = array
@@ -300,7 +323,8 @@ def demo():
     bigpaths = [path for path in paths if get_interior_area(path) > thresh]
     print numpy.array(array, dtype=numpy.int)
     #display_paths(bigpaths)
-    polygons = get_polygons(bigpaths)
+    path_options = get_path_options(bigpaths)
+    display_path_options(bigpaths, path_options)
 
 def doctests():
     import doctest
