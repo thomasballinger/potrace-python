@@ -1,14 +1,14 @@
 import Image
 import numpy
-
-import pylab
+import itertools
+import math
 
 BLACK = True
 WHITE = False
 
 #TODO address the implications of centers vs corners
 
-def testData():
+def test_data():
     im = Image.open('data1.bmp')
     a = numpy.zeros(im.size, dtype=numpy.bool)
     for i in range(im.size[0]):
@@ -39,15 +39,32 @@ def problem_test_data():
     return a
 
 def neighbors(spot, array):
+    """Returns the neighboring pixels which are not out of bounds
+
+    Order is top, left, right, bottom
+
+    >>> array = numpy.zeros((3,3))
+    >>> neighbors((0,0), array)
+    [(0, 1), (1, 0)]
+    >>> neighbors((1,1), array)
+    [(0, 1), (1, 0), (1, 2), (2, 1)]
+    """
     neighbors = []
     for row_offset, col_offset in [(-1,0), (0,-1), (0,1), (1,0)]:
         pos = (spot[0]+row_offset, spot[1]+col_offset)
         if 0 <= pos[0] < array.shape[0] and 0 <= pos[1] < array.shape[1]:
             neighbors.append(pos)
-    #print 'neighbors', neighbors
     return neighbors
 
 def first_neighbor(spot, color, array):
+    """Returns the first existing neighbor of color, or None
+
+    Returns in same order as neighbors
+
+    >>> a = numpy.array([[0,0,1], [1,0,1], [0,1,0]])
+    >>> first_neighbor((1,1), 1, a)
+    (1, 0)
+    """
     for pos in neighbors(spot, array):
         if array[pos[0], pos[1]] == color:
             return pos
@@ -201,9 +218,51 @@ def get_paths(array):
         print path, path_areas[tuple(path)]
     return paths
 
+def straight(start_index, index_to_try, path):
+    """Returns True if """
+    print start_index, index_to_try, path
+    if start_index < index_to_try:
+        comb_pool = path[start_index:index_to_try+1]
+    elif index_to_try < start_index:
+        comb_pool = path[start_index:] + path[:index_to_try+1]
+    else:
+        assert False
+    for A, P, B in itertools.combinations(comb_pool, 3):
+        normalLength = math.sqrt((B[0] - A[0]) * (B[0] - A[0]) + (B[1] - A[1]) * (B[1] - A[1]));
+        l = abs((P[0] - A[0]) * (B[1] - A[1]) - (P[1] - A[1]) * (B[0] - A[0])) / normalLength;
+        if l > 1:
+            return False
+    return True
+
+def find_direction(index_to_try, path):
+    v1 = path[index_to_try]
+    v2 = path[index_to_try-1]
+    diff = (v2[0] - v1[0], v2[1] - v1[1])
+    print 'find direction result', v1, v2, diff
+    return diff
+
 def get_polygons(paths):
     print paths
-    # find straight lines? page 6 of technical paper
+
+    all_path_straight_line_options = []
+    for path in paths:
+        path_length = len(path)
+        straight_line_options = [i+2 for i in range(path_length)]
+        for i in range(path_length):
+            dir_set = set()
+            dir_set.add(find_direction((i+1) % path_length, path))
+            dir_set.add(find_direction((i+2) % path_length, path))
+            while True:
+                index_to_try = (straight_line_options[i] + 1) % path_length
+                dir_set.add(find_direction(index_to_try, path))
+                if len(dir_set) == 4:
+                    break
+                elif straight(i, index_to_try, path):
+                    straight_line_options[i] = index_to_try
+                else:
+                    break
+        all_path_straight_line_options.append(straight_line_options)
+    return all_path_straight_line_options
 
 def display_array(array):
     from pylab import imshow
@@ -221,7 +280,6 @@ def display_paths(paths):
         pyplot.ylim(ymin-(ysize/8), ymax+(ysize/8))
 
     for path in paths:
-        print zip(*path)
         pyplot.plot(*zip(*(path+[path[0]])))
     zoom_out()
     pyplot.show()
@@ -231,16 +289,24 @@ def padded(array):
     new_array[1:-1, 1:-1] = array
     return new_array
 
-if __name__ == '__main__':
-    #im = simple_test_data()
+def demo():
+    im = simple_test_data()
     #im = problem_test_data()
-    im = testData()
+    #im = test_data()
     array = padded(im)
     paths = get_paths(im)
-    thresh = 20
+    print paths
+    thresh = 0
     bigpaths = [path for path in paths if get_interior_area(path) > thresh]
-    print numpy.array(numpy.rot90(array), dtype=numpy.int)
-    display_paths(bigpaths)
+    print numpy.array(array, dtype=numpy.int)
+    #display_paths(bigpaths)
+    polygons = get_polygons(bigpaths)
 
-    polygons = get_polygons(paths)
+def doctests():
+    import doctest
+    doctest.testmod()
+
+if __name__ == "__main__":
+    demo()
+
 
