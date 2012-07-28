@@ -4,3 +4,6 @@ He has great docs here:
 
 * [method](http://potrace.sourceforge.net/potrace.pdf)
 * [api](http://potrace.sourceforge.net/potracelib.pdf)
+
+
+Understanding the potrace algorithm as prep for https://github.com/dunvi/potrace-js
