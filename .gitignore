@@ -6,3 +6,5 @@ include
 lib
 potrace-1.*
 share
+
+*.swp

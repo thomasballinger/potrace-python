@@ -244,10 +244,38 @@ def straight(start_index, index_to_try, path):
     return True
 
 def find_direction(index_to_try, path):
+    """At a vertex, determine the direction in which the path goes to arrive at that vertex"""
     v1 = path[index_to_try]
     v2 = path[index_to_try-1]
     diff = (v2[0] - v1[0], v2[1] - v1[1])
     return diff
+
+def get_path_options_new(paths):
+    for path in paths:
+        print path
+        next_corner = [None] * len(path)
+        diffs = []
+        for i in range(len(path)):
+            diffs.append(find_direction(i, path))
+        next_corner[0] = 0
+        for i in [0] + range(len(path)-1, 0, -1):
+            if diffs[i] == diffs[i-1]:
+                next_corner[i-1] = next_corner[i]
+            else:
+                next_corner[i-1] = (i-1) % len(path)
+        print 'index of next corner', next_corner
+
+        def cross(a, b):
+            return a[0]*b[1]-a[1]*b[0]
+
+        for i in range(len(path)):
+            for j in [x for x in range(len(path))]:
+                pass
+
+        raw_input()
+        path_options = []
+        all_path_options.append(path_options)
+    return path_options
 
 def get_path_options(paths):
     #print 'paths:',paths
@@ -372,9 +400,21 @@ def demo():
     bigpaths = [path for path in paths if get_interior_area(path) > thresh]
     #print numpy.array(array, dtype=numpy.int)
     #display_paths(bigpaths)
+    import time
+    t0 = time.time()
+    print 'starting get path options'
     path_options = get_path_options(bigpaths)
-    shortest_path_options = get_shortest_path_options(path_options)
-    print shortest_path_options
+    t1 = time.time()
+    print 'finished old get path options in', t1-t0
+
+    t0 = time.time()
+    print 'starting get path options new'
+    path_options = get_path_options_new(bigpaths)
+    t1 = time.time()
+    print 'finished old get path options in', t1-t0
+
+    #shortest_path_options = get_shortest_path_options(path_options)
+    #print shortest_path_options
 
     #display_path_options(bigpaths, path_options)
 
