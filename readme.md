@@ -1,4 +1,6 @@
 Potrace in Python
+-----------------
+
 Potrace is a c library is copyright Peter Selinger.
 He has great docs here:
 
@@ -7,5 +9,8 @@ He has great docs here:
 
 http://img.photobucket.com/albums/v41/dracona/coolimage2.png
 http://img.photobucket.com/albums/v41/dracona/coolimage.png
+
+Included here is a snippet of his code which I've modified a bit - it's under
+whatever his license was.
 
 Understanding the potrace algorithm as prep for https://github.com/dunvi/potrace-js
