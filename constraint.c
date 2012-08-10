@@ -104,6 +104,7 @@ static int calc_furthest_straight_vertex(path_t *p) {
   for (i=path_length-1; cyclic(mod(i+1,path_length),j,p->furthest_straight_vertex[i]); i--) {
     p->furthest_straight_vertex[i] = j;
   }
-
+  for (i=0; i<path_length; i++)
+    printf(" %d ", furthest_straight_vertex[i]);
   return 0;
 }
